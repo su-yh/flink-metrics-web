@@ -109,7 +109,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
         }
       },
       axisTick: {
-
+        length: 5
       }
     },
     yAxis: [{
@@ -203,13 +203,10 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
 </script>
 
 <style scoped lang="less">
-.parent {
-
-  #ts {
-    width: 800px;
-    height: 400px;
-    border: 1px solid red;
-    margin: 0 auto;
-  }
+#ts {
+  width: 800px;
+  height: 400px;
+  border: 1px solid red;
+  margin: 0 auto;
 }
 </style>
