@@ -19,7 +19,8 @@ onMounted(() => {
   //初始化图表只需要进行一次
   initChart();
   // 定时任务
-  timer = setInterval(getCpuData, 3000);
+  getCpuData()
+  timer = setInterval(getCpuData, 30000);
 });
 
 onUnmounted(() => {
@@ -33,9 +34,6 @@ const initChart = () => {
   chartDom.value = echarts.init(dom);
 }
 
-// 堆内存使用
-const heapUsedList = ref([])
-
 const getCpuData = async () => {
 
   //1、拿到服务器真正的响应； 给服务器发送请求获取
@@ -45,6 +43,11 @@ const getCpuData = async () => {
     console.error('data 不是一个数组');
     return;
   }
+
+  // 1 小时前的时间戳
+  const currentTimestamp = Date.now();
+  const oneHourInMilliseconds = 60 * 60 * 1000;
+  const oneHourAgoTimestamp = currentTimestamp - oneHourInMilliseconds;
 
   let combinedData = [];
   let tsMin = Number.MAX_VALUE;
@@ -61,7 +64,11 @@ const getCpuData = async () => {
         tsMax = metric.ts;
       }
 
-      combinedData.push([metric.ts, heapUsedMb])
+      console.log(`metric.ts: ${metric.ts}, oneHourAgoTimestamp: ${oneHourAgoTimestamp}`)
+      // console.log('比较结果:', metric.ts >= oneHourAgoTimestamp);
+      if (metric.ts >= oneHourAgoTimestamp) {
+        combinedData.push([metric.ts, heapUsedMb])
+      }
     }
   }
 
@@ -69,6 +76,7 @@ const getCpuData = async () => {
   // if (numToRemove > 0) {
   //   heapUsedList.value.splice(0, numToRemove)
   // }
+  console.log("combinedData length: ", combinedData.length)
 
   drawCpuLoad(combinedData, tsMin, tsMax)
 }
@@ -96,7 +104,7 @@ const drawCpuLoad = (combinedData, tsMin, tsMax) => {
       show: true,
       type: "value",
       min: 0,
-      max: 2000,
+      max: 600,
       axisTick: {
         length: 10,
         lineStyle: {
@@ -130,12 +138,10 @@ const drawCpuLoad = (combinedData, tsMin, tsMax) => {
 
 <style scoped lang="less">
 .parent {
-  width: 100vw;
-  height: 400px;
 
   #ts {
-    width: 1024px;
-    height: 100%;
+    width: 800px;
+    height: 400px;
     border: 1px solid red;
     margin: 0 auto;
   }
