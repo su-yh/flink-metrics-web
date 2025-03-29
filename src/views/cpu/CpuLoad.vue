@@ -11,11 +11,12 @@
 
 <script setup>
 import * as echarts from "echarts";
-import {onMounted, ref} from "vue";
+import {onMounted, ref, onUnmounted} from "vue";
 import {taskManagerListAll} from "@/api/cpuloadApi"
 
 //保存所有初始化的图表
 const chartDom = ref([]);
+let timer;
 
 onMounted(() => {
   //页面加载出来，有div dom元素才可以
@@ -23,7 +24,12 @@ onMounted(() => {
   //初始化图表只需要进行一次
   initChart();
   // 定时任务
-  setTimeout(getCpuData, 3000);
+  timer = setInterval(getCpuData, 3000);
+});
+
+onUnmounted(() => {
+  // 组件卸载时清除定时器，避免内存泄漏
+  clearInterval(timer);
 });
 
 const initChart = () => {
