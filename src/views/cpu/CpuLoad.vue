@@ -39,27 +39,21 @@ const heapUsedList = ref([])
 const getCpuData = async () => {
 
   //1、拿到服务器真正的响应； 给服务器发送请求获取
-  let data = await taskManagerListAll();
-  if (!Array.isArray(data)) {
+  let metrics = await taskManagerListAll();
+  if (!Array.isArray(metrics)) {
     console.error('data 不是一个数组');
     return;
   }
 
-  const validHeapUsedValues = [];
-  for (let i = 0; i < data.length; i++) {
-    const item = data[i];
+  for (let i = 0; i < metrics.length; i++) {
+    const metric = metrics[i];
     // 检查每个元素是否为对象且包含 heapUsed 属性
-    if (typeof item === 'object' && item !== null && 'heapUsed' in item) {
-      let heapUsedMb = item.heapUsed / 1024 / 1024;
-      validHeapUsedValues.push(heapUsedMb);
+    if (typeof metric === 'object' && metric !== null) {
+      let heapUsedMb = metric.heapUsed / 1024 / 1024;
+      heapUsedList.value.push(heapUsedMb);
     } else {
       console.error('data 数组中的元素不包含 heapUsed 属性');
     }
-  }
-
-  // 使用扩展运算符将 validHeapUsedValues 数组的元素逐个添加到 heapUsedList 中
-  if (validHeapUsedValues.length > 0) {
-    heapUsedList.value.push(...validHeapUsedValues);
   }
 
   let numToRemove = heapUsedList.value.length - 100;
@@ -78,7 +72,7 @@ const getCpuData = async () => {
 //1、每个图显示CPU名
 //2、每个图xy轴不显示
 //3、显示为面积图
-const drawCpuLoad = (cpuData) => {
+const drawCpuLoad = (cpuData, tsList) => {
   //得到一个chart对象
   let myChart = chartDom.value
   let option;
@@ -90,11 +84,17 @@ const drawCpuLoad = (cpuData) => {
     grid: {left: "60", right: "0", bottom: "30", top: "50"},
     xAxis: {
       show: true,
-      type: "category"
+      type: "time",
+      data: tsList,
+      axisTick: {
+
+      }
     },
     yAxis: {
       show: true,
       type: "value",
+      min: 0,
+      max: 2000,
       axisTick: {
         length: 10,
         lineStyle: {
@@ -109,9 +109,7 @@ const drawCpuLoad = (cpuData) => {
         formatter: '{value} MB',
         align: 'center'
         // ...
-      },
-      min: 0,
-      max: 2048
+      }
     },
     series: [
       {
