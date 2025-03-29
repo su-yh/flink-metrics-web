@@ -50,6 +50,7 @@ const getCpuData = async () => {
   const oneHourAgoTimestamp = currentTimestamp - oneHourInMilliseconds;
 
   let heapUsedList = [];
+  let heapUsedList02 = [];
   let tsMin = Number.MAX_VALUE;
   let tsMax = 0;
   for (let i = 0; i < metrics.length; i++) {
@@ -66,14 +67,15 @@ const getCpuData = async () => {
 
       if (metric.ts >= oneHourAgoTimestamp) {
         heapUsedList.push([metric.ts, heapUsedMb])
+        heapUsedList02.push([metric.ts, heapUsedMb / 2])
       }
     }
   }
 
-  drawCpuLoad(tsMin, tsMax, heapUsedList)
+  drawCpuLoad(tsMin, tsMax, heapUsedList, heapUsedList02)
 }
 
-const drawCpuLoad = (tsMin, tsMax, heapUsedList) => {
+const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
   //得到一个chart对象
   let myChart = chartDom.value
   let option;
@@ -92,7 +94,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList) => {
 
       }
     },
-    yAxis: {
+    yAxis: [{
       show: true,
       type: "value",
       min: 0,
@@ -112,14 +114,43 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList) => {
         align: 'center'
         // ...
       }
-    },
+    },{
+      show: true,
+      type: "value",
+      min: 0,
+      max: 600,
+      axisTick: {
+        length: 10,
+        lineStyle: {
+          type: 'dashed'
+          // ...
+        }
+      },
+      axisLabel: {
+        show: true,
+        inside: false,
+        margin: 32, // 这里可以让 MB 的显示与轴线有一定的间隔，否则很可能就显示在轴线上了。
+        formatter: '{value} MB',
+        align: 'center'
+        // ...
+      }
+    }
+    ],
     series: [
       {
         data: heapUsedList,
+        yAxisIndex: 0,
         type: "line",
         symbol: "none",
         smooth: true
       },
+      {
+        data: heapUsedList02,
+        yAxisIndex: 1,
+        type: "line",
+        symbol: "none",
+        smooth: true
+      }
     ],
   };
 
