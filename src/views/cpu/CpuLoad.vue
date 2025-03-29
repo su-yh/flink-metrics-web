@@ -49,7 +49,7 @@ const getCpuData = async () => {
   const oneHourInMilliseconds = 60 * 60 * 1000;
   const oneHourAgoTimestamp = currentTimestamp - oneHourInMilliseconds;
 
-  let combinedData = [];
+  let heapUsedList = [];
   let tsMin = Number.MAX_VALUE;
   let tsMax = 0;
   for (let i = 0; i < metrics.length; i++) {
@@ -64,24 +64,16 @@ const getCpuData = async () => {
         tsMax = metric.ts;
       }
 
-      console.log(`metric.ts: ${metric.ts}, oneHourAgoTimestamp: ${oneHourAgoTimestamp}`)
-      // console.log('比较结果:', metric.ts >= oneHourAgoTimestamp);
       if (metric.ts >= oneHourAgoTimestamp) {
-        combinedData.push([metric.ts, heapUsedMb])
+        heapUsedList.push([metric.ts, heapUsedMb])
       }
     }
   }
 
-  // let numToRemove = heapUsedList.value.length - 100;
-  // if (numToRemove > 0) {
-  //   heapUsedList.value.splice(0, numToRemove)
-  // }
-  console.log("combinedData length: ", combinedData.length)
-
-  drawCpuLoad(combinedData, tsMin, tsMax)
+  drawCpuLoad(tsMin, tsMax, heapUsedList)
 }
 
-const drawCpuLoad = (combinedData, tsMin, tsMax) => {
+const drawCpuLoad = (tsMin, tsMax, heapUsedList) => {
   //得到一个chart对象
   let myChart = chartDom.value
   let option;
@@ -123,11 +115,10 @@ const drawCpuLoad = (combinedData, tsMin, tsMax) => {
     },
     series: [
       {
-        data: combinedData,
+        data: heapUsedList,
         type: "line",
         symbol: "none",
-        smooth: true,
-        areaStyle: {}
+        smooth: true
       },
     ],
   };
