@@ -45,7 +45,7 @@ const obtainData = async () => {
   }
 
   // 1 小时前的时间戳
-  const oneHourAgoTimestamp = Date.now() - 60 * 60 * 1000;
+  const oneHourAgoTimestamp = Date.now() - 65 * 60 * 1000;
 
   let heapUsedList = [];
   let flinkMemoryManagerUsedList = [];
@@ -92,7 +92,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
 //   textStyle. fontSize
 
   option = {
-    title: {text: 'TaskManagerMetrics', textStyle: {fontSize: 14}},
+    title: {text: 'TaskManagerMetrics', textStyle: {fontSize: 20}},
     grid: {left: "70", right: "70", bottom: "30", top: "50"},
     xAxis: {
       show: true,
@@ -109,7 +109,6 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
         }
       },
       axisTick: {
-        length: 5
       }
     },
     yAxis: [{
