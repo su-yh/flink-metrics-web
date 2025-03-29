@@ -40,39 +40,40 @@ const getCpuData = async () => {
 
   //1、拿到服务器真正的响应； 给服务器发送请求获取
   let metrics = await taskManagerListAll();
+  // console.log("metrics: ", metrics)
   if (!Array.isArray(metrics)) {
     console.error('data 不是一个数组');
     return;
   }
 
+  let combinedData = [];
+  let tsMin = Number.MAX_VALUE;
+  let tsMax = 0;
   for (let i = 0; i < metrics.length; i++) {
     const metric = metrics[i];
     // 检查每个元素是否为对象且包含 heapUsed 属性
-    if (typeof metric === 'object' && metric !== null) {
+    if (metric !== null) {
       let heapUsedMb = metric.heapUsed / 1024 / 1024;
-      heapUsedList.value.push(heapUsedMb);
-    } else {
-      console.error('data 数组中的元素不包含 heapUsed 属性');
+      if (metric.ts < tsMin) {
+        tsMin = metric.ts;
+      }
+      if (metric.ts > tsMax) {
+        tsMax = metric.ts;
+      }
+
+      combinedData.push([metric.ts, heapUsedMb])
     }
   }
 
-  let numToRemove = heapUsedList.value.length - 100;
-  console.log("numToRemove: ", numToRemove)
-  if (numToRemove > 0) {
-    heapUsedList.value.splice(0, numToRemove)
-  }
+  // let numToRemove = heapUsedList.value.length - 100;
+  // if (numToRemove > 0) {
+  //   heapUsedList.value.splice(0, numToRemove)
+  // }
 
-  //这里会 OOM；这个数组最多放 60个？ 超过 60个删除最老的
-
-  drawCpuLoad(heapUsedList.value)
-
-  // await getCpuData();
+  drawCpuLoad(combinedData, tsMin, tsMax)
 }
 
-//1、每个图显示CPU名
-//2、每个图xy轴不显示
-//3、显示为面积图
-const drawCpuLoad = (cpuData, tsList) => {
+const drawCpuLoad = (combinedData, tsMin, tsMax) => {
   //得到一个chart对象
   let myChart = chartDom.value
   let option;
@@ -85,7 +86,8 @@ const drawCpuLoad = (cpuData, tsList) => {
     xAxis: {
       show: true,
       type: "time",
-      data: tsList,
+      min: tsMin,
+      max: tsMax,
       axisTick: {
 
       }
@@ -113,7 +115,7 @@ const drawCpuLoad = (cpuData, tsList) => {
     },
     series: [
       {
-        data: cpuData,
+        data: combinedData,
         type: "line",
         symbol: "none",
         smooth: true,
