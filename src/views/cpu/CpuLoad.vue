@@ -84,7 +84,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
 
   option = {
     title: {text: 'TaskManagerMetrics', textStyle: {fontSize: 14}},
-    grid: {left: "60", right: "0", bottom: "30", top: "50"},
+    grid: {left: "60", right: "10", bottom: "30", top: "50"},
     xAxis: {
       show: true,
       type: "time",
@@ -109,9 +109,9 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
       axisLabel: {
         show: true,
         inside: false,
-        margin: 32, // 这里可以让 MB 的显示与轴线有一定的间隔，否则很可能就显示在轴线上了。
+        // margin: 32, // 这里可以让 MB 的显示与轴线有一定的间隔，否则很可能就显示在轴线上了。
         formatter: '{value} MB',
-        align: 'center'
+        align: 'right'
         // ...
       }
     },{
