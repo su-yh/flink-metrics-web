@@ -1,14 +1,16 @@
-
 import http from "@/http";
 
 
-//获取cpu负载数据
-const getCpuLoadApi = ()=>{
-    return http.get("/metrics/cpuload")
+const params = {
+  taskManagerId: 'localhost:34339-19078e'
+};
+
+const taskManagerListAll = () => {
+  return http.get("/task/manager/listAll", {params})
 }
 
 
 export {
-    getCpuLoadApi
+  taskManagerListAll
 }
 

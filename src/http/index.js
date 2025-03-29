@@ -1,7 +1,11 @@
 // 抽取 axios 发请求的方法
 import axios from "axios";
+
+const originalBaseURL = 'http://localhost:8192';
+const contextPath = '/flink/metric';
+
 const http = axios.create({
-    baseURL: 'http://localhost:8080/',
+    baseURL: originalBaseURL + contextPath,
     timeout: 3000,
     headers: {'X-Custom-Header': 'foobar'}
 });
