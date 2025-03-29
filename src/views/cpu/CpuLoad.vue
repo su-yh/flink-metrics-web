@@ -72,6 +72,10 @@ const getCpuData = async () => {
     }
   }
 
+  if (tsMin < oneHourAgoTimestamp) {
+    tsMin = oneHourAgoTimestamp;
+  }
+
   drawCpuLoad(tsMin, tsMax, heapUsedList, heapUsedList02)
 }
 
