@@ -49,8 +49,9 @@ const getCpuData = async () => {
   for (let i = 0; i < data.length; i++) {
     const item = data[i];
     // 检查每个元素是否为对象且包含 heapUsed 属性
-    if (typeof item === 'object' && item!== null && 'heapUsed' in item) {
-      validHeapUsedValues.push(item.heapUsed);
+    if (typeof item === 'object' && item !== null && 'heapUsed' in item) {
+      let heapUsedMb = item.heapUsed / 1024 / 1024;
+      validHeapUsedValues.push(heapUsedMb);
     } else {
       console.error('data 数组中的元素不包含 heapUsed 属性');
     }
@@ -86,7 +87,7 @@ const drawCpuLoad = (cpuData) => {
 
   option = {
     title: {text: 'TaskManagerMetrics', textStyle: {fontSize: 14}},
-    grid: {left: "10", right: "0", bottom: "5", top: "10"},
+    grid: {left: "60", right: "0", bottom: "30", top: "50"},
     xAxis: {
       show: true,
       type: "category"
@@ -94,8 +95,23 @@ const drawCpuLoad = (cpuData) => {
     yAxis: {
       show: true,
       type: "value",
+      axisTick: {
+        length: 10,
+        lineStyle: {
+          type: 'dashed'
+          // ...
+        }
+      },
+      axisLabel: {
+        show: true,
+        inside: false,
+        margin: 32, // 这里可以让 MB 的显示与轴线有一定的间隔，否则很可能就显示在轴线上了。
+        formatter: '{value} MB',
+        align: 'center'
+        // ...
+      },
       min: 0,
-      max: 307779512 * 2
+      max: 2048
     },
     series: [
       {
