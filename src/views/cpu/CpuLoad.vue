@@ -45,7 +45,7 @@ const obtainData = async () => {
   }
 
   // 1 小时前的时间戳
-  const oneHourAgoTimestamp = Date.now() - 30 * 60 * 1000;
+  const oneHourAgoTimestamp = Date.now() - 60 * 60 * 1000;
 
   let heapUsedList = [];
   let flinkMemoryManagerUsedList = [];
@@ -103,7 +103,9 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
         formatter: function (value) {
           // 这里可以根据需求自定义时间格式
           const date = new Date(value);
-          return date.getHours() + ":" + date.getMinutes();
+          let h = String(date.getHours()).padStart(2, '0');
+          let m = String(date.getMinutes()).padStart(2, '0');
+          return `${h}:${m}`;
         }
       },
       axisTick: {
