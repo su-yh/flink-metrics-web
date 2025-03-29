@@ -19,8 +19,8 @@ onMounted(() => {
   //初始化图表只需要进行一次
   initChart();
   // 定时任务
-  getCpuData()
-  timer = setInterval(getCpuData, 30000);
+  obtainData()
+  timer = setInterval(obtainData, 30000);
 });
 
 onUnmounted(() => {
@@ -34,7 +34,7 @@ const initChart = () => {
   chartDom.value = echarts.init(dom);
 }
 
-const getCpuData = async () => {
+const obtainData = async () => {
 
   //1、拿到服务器真正的响应； 给服务器发送请求获取
   let metrics = await taskManagerListAll();
@@ -48,7 +48,8 @@ const getCpuData = async () => {
   const oneHourAgoTimestamp = Date.now() - 60 * 60 * 1000;
 
   let heapUsedList = [];
-  let heapUsedList02 = [];
+  let flinkMemoryManagerUsedList = [];
+  let jvmMemoryMetaspaceUsedLib = [];
   let tsMin = Number.MAX_VALUE;
   let tsMax = 0;
   for (let i = 0; i < metrics.length; i++) {
@@ -56,6 +57,8 @@ const getCpuData = async () => {
     // 检查每个元素是否为对象且包含 heapUsed 属性
     if (metric !== null) {
       let heapUsedMb = metric.heapUsed / 1024 / 1024;
+      let flinkMemoryManagerUsedMb = metric.flinkMemoryManagerUsed / 1024 / 1024;
+      let jvmMemoryMetaspaceUsedMb = metric.jvmMemoryMetaspaceUsed / 1024 / 1024;
       if (metric.ts < tsMin) {
         tsMin = metric.ts;
       }
@@ -65,7 +68,11 @@ const getCpuData = async () => {
 
       if (metric.ts >= oneHourAgoTimestamp) {
         heapUsedList.push([metric.ts, heapUsedMb])
-        heapUsedList02.push([metric.ts, heapUsedMb / 2])
+        // heapUsedList.push([metric.ts, 0])
+        flinkMemoryManagerUsedList.push([metric.ts, flinkMemoryManagerUsedMb])
+        // flinkMemoryManagerUsedList.push([metric.ts, 0])
+        jvmMemoryMetaspaceUsedLib.push([metric.ts, jvmMemoryMetaspaceUsedMb])
+        // jvmMemoryMetaspaceUsedLib.push([metric.ts, 0])
       }
     }
   }
@@ -74,10 +81,10 @@ const getCpuData = async () => {
     tsMin = oneHourAgoTimestamp;
   }
 
-  drawCpuLoad(tsMin, tsMax, heapUsedList, heapUsedList02)
+  drawCpuLoad(tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvmMemoryMetaspaceUsedLib)
 }
 
-const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
+const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvmMemoryMetaspaceUsedLib) => {
   //得到一个chart对象
   let myChart = chartDom.value
   let option;
@@ -86,7 +93,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
 
   option = {
     title: {text: 'TaskManagerMetrics', textStyle: {fontSize: 14}},
-    grid: {left: "60", right: "10", bottom: "30", top: "50"},
+    grid: {left: "70", right: "70", bottom: "30", top: "50"},
     xAxis: {
       show: true,
       type: "time",
@@ -100,7 +107,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
       show: true,
       type: "value",
       min: 0,
-      max: 600,
+      max: 2000,
       axisTick: {
         length: 10,
         lineStyle: {
@@ -120,7 +127,27 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
       show: true,
       type: "value",
       min: 0,
-      max: 600,
+      max: 2000,
+      axisTick: {
+        length: 10,
+        lineStyle: {
+          type: 'dashed'
+          // ...
+        }
+      },
+      axisLabel: {
+        show: true,
+        inside: false,
+        margin: 32, // 这里可以让 MB 的显示与轴线有一定的间隔，否则很可能就显示在轴线上了。
+        formatter: '{value} MB',
+        align: 'center'
+        // ...
+      }
+    },{
+      show: true,
+      type: "value",
+      min: 0,
+      max: 2000,
       axisTick: {
         length: 10,
         lineStyle: {
@@ -147,7 +174,13 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, heapUsedList02) => {
         smooth: true
       },
       {
-        data: heapUsedList02,
+        data: flinkMemoryManagerUsedList,
+        yAxisIndex: 1,
+        type: "line",
+        symbol: "none",
+        smooth: true
+      },{
+        data: jvmMemoryMetaspaceUsedLib,
         yAxisIndex: 1,
         type: "line",
         symbol: "none",
