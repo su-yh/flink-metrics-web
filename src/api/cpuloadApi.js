@@ -2,7 +2,7 @@ import http from "@/http";
 
 
 const params = {
-  taskManagerId: 'localhost:37303-77efd1'
+  flinkEnvName: 'suyh'
 };
 
 const taskManagerListAll = () => {

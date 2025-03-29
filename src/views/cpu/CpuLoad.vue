@@ -20,7 +20,7 @@ onMounted(() => {
   initChart();
   // 定时任务
   obtainData()
-  timer = setInterval(obtainData, 30000);
+  timer = setInterval(obtainData, 3_000);
 });
 
 onUnmounted(() => {
@@ -45,7 +45,7 @@ const obtainData = async () => {
   }
 
   // 1 小时前的时间戳
-  const oneHourAgoTimestamp = Date.now() - 60 * 60 * 1000;
+  const oneHourAgoTimestamp = Date.now() - 30 * 60 * 1000;
 
   let heapUsedList = [];
   let flinkMemoryManagerUsedList = [];
@@ -99,6 +99,13 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
       type: "time",
       min: tsMin,
       max: tsMax,
+      axisLabel: {
+        formatter: function (value) {
+          // 这里可以根据需求自定义时间格式
+          const date = new Date(value);
+          return date.getHours() + ":" + date.getMinutes();
+        }
+      },
       axisTick: {
 
       }
