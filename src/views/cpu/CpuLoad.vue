@@ -45,9 +45,7 @@ const getCpuData = async () => {
   }
 
   // 1 小时前的时间戳
-  const currentTimestamp = Date.now();
-  const oneHourInMilliseconds = 60 * 60 * 1000;
-  const oneHourAgoTimestamp = currentTimestamp - oneHourInMilliseconds;
+  const oneHourAgoTimestamp = Date.now() - 60 * 60 * 1000;
 
   let heapUsedList = [];
   let heapUsedList02 = [];
