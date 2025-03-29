@@ -1,12 +1,7 @@
 <template>
-  <a-space wrap>
-    <!-- 16个 叫 cpu-[1~16] -->
-    <div
-        :id="`ts-${i}`"
-        style="width: 800px; height: 800px; border: 1px solid black"
-        v-for="i in 1"
-    ></div>
-  </a-space>
+  <div class="parent">
+    <div id="ts"></div>
+  </div>
 </template>
 
 <script setup>
@@ -33,32 +28,48 @@ onUnmounted(() => {
 });
 
 const initChart = () => {
-  let dom = document.getElementById("ts-1");
+  let dom = document.getElementById("ts");
   //得到一个chart对象
   chartDom.value = echarts.init(dom);
 }
 
-const cpuAllData = ref([])
+// 堆内存使用
+const heapUsedList = ref([])
 
 const getCpuData = async () => {
 
   //1、拿到服务器真正的响应； 给服务器发送请求获取
   let data = await taskManagerListAll();
-  console.log("resp: ", data)
+  if (!Array.isArray(data)) {
+    console.error('data 不是一个数组');
+    return;
+  }
 
-  if (cpuAllData.value.length > 60) {
-    //把最老的一个数据删除，放入最新获取的这个数据
-    let arr = cpuAllData.value.slice(-60); //移除了最前一个元素的数组
-    arr.push(data)
-    cpuAllData.value = arr;
-  } else {
-    //每次给里面放之前最数组的长度进行一个判断
-    cpuAllData.value.push(data[i])
+  const validHeapUsedValues = [];
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    // 检查每个元素是否为对象且包含 heapUsed 属性
+    if (typeof item === 'object' && item!== null && 'heapUsed' in item) {
+      validHeapUsedValues.push(item.heapUsed);
+    } else {
+      console.error('data 数组中的元素不包含 heapUsed 属性');
+    }
+  }
+
+  // 使用扩展运算符将 validHeapUsedValues 数组的元素逐个添加到 heapUsedList 中
+  if (validHeapUsedValues.length > 0) {
+    heapUsedList.value.push(...validHeapUsedValues);
+  }
+
+  let numToRemove = heapUsedList.value.length - 100;
+  console.log("numToRemove: ", numToRemove)
+  if (numToRemove > 0) {
+    heapUsedList.value.splice(0, numToRemove)
   }
 
   //这里会 OOM；这个数组最多放 60个？ 超过 60个删除最老的
 
-  drawCpuLoad(cpuAllData.value)
+  drawCpuLoad(heapUsedList.value)
 
   // await getCpuData();
 }
@@ -75,16 +86,16 @@ const drawCpuLoad = (cpuData) => {
 
   option = {
     title: {text: 'TaskManagerMetrics', textStyle: {fontSize: 14}},
-    grid: {left: "0", right: "0", bottom: "5", top: "0"},
+    grid: {left: "10", right: "0", bottom: "5", top: "10"},
     xAxis: {
-      show: false,
+      show: true,
       type: "category"
     },
     yAxis: {
-      show: false,
+      show: true,
       type: "value",
       min: 0,
-      max: 1
+      max: 307779512 * 2
     },
     series: [
       {
@@ -101,4 +112,16 @@ const drawCpuLoad = (cpuData) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped lang="less">
+.parent {
+  width: 100vw;
+  height: 400px;
+
+  #ts {
+    width: 1024px;
+    height: 100%;
+    border: 1px solid red;
+    margin: 0 auto;
+  }
+}
+</style>
