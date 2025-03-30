@@ -6,7 +6,7 @@ const params = {
 };
 
 const taskManagerListAll = () => {
-  return http.get("/task/manager/listAll", {params})
+  return http.get("/task/manager/listQuery", {params})
 }
 
 
