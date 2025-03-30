@@ -54,11 +54,9 @@ const obtainData = async () => {
     metricsAll.splice(0, removeNum);
   }
 
-  console.log(`metricsAll.length: ${metricsAll.length}, lastTs: ${lastTs}`)
-
   let heapUsedList = [];
   let flinkMemoryManagerUsedList = [];
-  let jvmMemoryMetaspaceUsedLib = [];
+  let jvmMemoryMetaspaceUsedList = [];
   let tsMin = Number.MAX_VALUE;
   let tsMax = 0;
   for (let i = 0; i < metricsAll.length; i++) {
@@ -79,8 +77,8 @@ const obtainData = async () => {
       // heapUsedList.push([metric.ts, 0])
       flinkMemoryManagerUsedList.push([metric.ts, flinkMemoryManagerUsedMb])
       // flinkMemoryManagerUsedList.push([metric.ts, 0])
-      jvmMemoryMetaspaceUsedLib.push([metric.ts, jvmMemoryMetaspaceUsedMb])
-      // jvmMemoryMetaspaceUsedLib.push([metric.ts, 0])
+      jvmMemoryMetaspaceUsedList.push([metric.ts, jvmMemoryMetaspaceUsedMb])
+      // jvmMemoryMetaspaceUsedList.push([metric.ts, 0])
     }
   }
 
@@ -88,10 +86,10 @@ const obtainData = async () => {
     lastTs = tsMax;
   }
 
-  drawCpuLoad(tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvmMemoryMetaspaceUsedLib)
+  drawCpuLoad(tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvmMemoryMetaspaceUsedList)
 }
 
-const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvmMemoryMetaspaceUsedLib) => {
+const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvmMemoryMetaspaceUsedList) => {
   //得到一个chart对象
   let myChart = chartDom.value
   let option;
@@ -99,8 +97,13 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
 //   textStyle. fontSize
 
   option = {
-    title: {text: 'TaskManagerMetrics', textStyle: {fontSize: 20}},
-    grid: {left: "70", right: "70", bottom: "30", top: "50"},
+    title: {text: 'TaskManagerMetrics', left: 'center', textStyle: {fontSize: 20}},
+    grid: {left: "70", right: "70", bottom: "30", top: "70"},
+    legend: {
+      data: ['heapUsed', 'flinkMemoryManagerUsed', 'jvmMemoryMetaspaceUsed'],
+      left: 'center',
+      top: 30
+    },
     xAxis: {
       show: true,
       type: "time",
@@ -115,8 +118,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
           return `${h}:${m}`;
         }
       },
-      axisTick: {
-      }
+      axisTick: {}
     },
     yAxis: [{
       show: true,
@@ -138,7 +140,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
         align: 'right'
         // ...
       }
-    },{
+    }, {
       show: true,
       type: "value",
       min: 0,
@@ -158,7 +160,7 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
         align: 'center'
         // ...
       }
-    },{
+    }, {
       show: true,
       type: "value",
       min: 0,
@@ -182,20 +184,22 @@ const drawCpuLoad = (tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvm
     ],
     series: [
       {
+        name: 'heapUsed',
         data: heapUsedList,
         yAxisIndex: 0,
         type: "line",
         symbol: "none",
         smooth: true
-      },
-      {
+      }, {
+        name: 'flinkMemoryManagerUsed',
         data: flinkMemoryManagerUsedList,
         yAxisIndex: 1,
         type: "line",
         symbol: "none",
         smooth: true
-      },{
-        data: jvmMemoryMetaspaceUsedLib,
+      }, {
+        name: 'jvmMemoryMetaspaceUsed',
+        data: jvmMemoryMetaspaceUsedList,
         yAxisIndex: 1,
         type: "line",
         symbol: "none",
