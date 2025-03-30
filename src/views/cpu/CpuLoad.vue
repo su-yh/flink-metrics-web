@@ -12,6 +12,9 @@ import {taskManagerListAll} from "@/api/cpuloadApi"
 //保存所有初始化的图表
 const chartDom = ref({});
 let timer;
+let env = 'suyh';
+let lastTs = 0;
+let metricsAll = [];
 
 onMounted(() => {
   //页面加载出来，有div dom元素才可以
@@ -35,25 +38,31 @@ const initChart = () => {
 }
 
 const obtainData = async () => {
+  let startTs = lastTs + 1;
 
   //1、拿到服务器真正的响应； 给服务器发送请求获取
-  let metrics = await taskManagerListAll();
-  // console.log("metrics: ", metrics)
+  let metrics = await taskManagerListAll(env, startTs);
   if (!Array.isArray(metrics)) {
     console.error('data 不是一个数组');
     return;
   }
 
-  // 1 小时前的时间戳
-  const oneHourAgoTimestamp = Date.now() - 65 * 60 * 1000;
+  metricsAll.push(...metrics);
+
+  if (metricsAll.length > 3600) {
+    let removeNum = metricsAll.length - 3600;
+    metricsAll.splice(0, removeNum);
+  }
+
+  console.log(`metricsAll.length: ${metricsAll.length}, lastTs: ${lastTs}`)
 
   let heapUsedList = [];
   let flinkMemoryManagerUsedList = [];
   let jvmMemoryMetaspaceUsedLib = [];
   let tsMin = Number.MAX_VALUE;
   let tsMax = 0;
-  for (let i = 0; i < metrics.length; i++) {
-    const metric = metrics[i];
+  for (let i = 0; i < metricsAll.length; i++) {
+    const metric = metricsAll[i];
     // 检查每个元素是否为对象且包含 heapUsed 属性
     if (metric !== null) {
       let heapUsedMb = metric.heapUsed / 1024 / 1024;
@@ -66,19 +75,17 @@ const obtainData = async () => {
         tsMax = metric.ts;
       }
 
-      if (metric.ts >= oneHourAgoTimestamp) {
-        heapUsedList.push([metric.ts, heapUsedMb])
-        // heapUsedList.push([metric.ts, 0])
-        flinkMemoryManagerUsedList.push([metric.ts, flinkMemoryManagerUsedMb])
-        // flinkMemoryManagerUsedList.push([metric.ts, 0])
-        jvmMemoryMetaspaceUsedLib.push([metric.ts, jvmMemoryMetaspaceUsedMb])
-        // jvmMemoryMetaspaceUsedLib.push([metric.ts, 0])
-      }
+      heapUsedList.push([metric.ts, heapUsedMb])
+      // heapUsedList.push([metric.ts, 0])
+      flinkMemoryManagerUsedList.push([metric.ts, flinkMemoryManagerUsedMb])
+      // flinkMemoryManagerUsedList.push([metric.ts, 0])
+      jvmMemoryMetaspaceUsedLib.push([metric.ts, jvmMemoryMetaspaceUsedMb])
+      // jvmMemoryMetaspaceUsedLib.push([metric.ts, 0])
     }
   }
 
-  if (tsMin < oneHourAgoTimestamp) {
-    tsMin = oneHourAgoTimestamp;
+  if (tsMax > lastTs) {
+    lastTs = tsMax;
   }
 
   drawCpuLoad(tsMin, tsMax, heapUsedList, flinkMemoryManagerUsedList, jvmMemoryMetaspaceUsedLib)

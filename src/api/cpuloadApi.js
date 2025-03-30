@@ -1,12 +1,8 @@
 import http from "@/http";
 
 
-const params = {
-  flinkEnvName: 'suyh'
-};
-
-const taskManagerListAll = () => {
-  return http.get("/task/manager/listQuery", {params})
+const taskManagerListAll = (flinkEnvName, startTs, endTs) => {
+  return http.get("/task/manager/listQuery", {params: {flinkEnvName, startTs, endTs}})
 }
 
 
